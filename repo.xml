@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<meta xmlns="http://exist-db.org/xquery/repo">
+    <description>Client Data</description>
+    <author>Ashok</author>
+    <author>Ashok</author>
+    <website/>
+    <status>alpha</status>
+    <license>GNU-LGPL</license>
+    <copyright>true</copyright>
+    <type>application</type>
+    <target>gawati-client-data</target>
+    <prepare>pre-install.xql</prepare>
+    <finish/>
+    <permissions user="gawati-client-data" group="gawati-client-data" mode="rw-rw-r--"/>
+<deployed>2018-01-21T23:21:58.964+05:30</deployed></meta>
