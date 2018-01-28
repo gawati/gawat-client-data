@@ -4,5 +4,6 @@
        new system of profiles to switch configs 
     
     -->
-    <storage path="/db/apps/gawati-client-data/xml-docs" user="gawati-client-data"/>
+    <!-- storage path must not end with / --> 
+    <storage path="/db/docs/gawati-client-data" user="gawati-client-data"/>
 </config>

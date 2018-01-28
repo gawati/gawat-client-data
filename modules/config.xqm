@@ -39,6 +39,7 @@ declare variable $config:expath-descriptor := doc(concat($config:app-root, "/exp
 
 declare variable $config:cfgs := doc(concat($config:app-root, "/_configs/cfgs.xml"))/cfgx:config ;
 
+
 (:~
  : Resolve the given path using the current application context.
  : If the app resides in the file system,
@@ -64,6 +65,13 @@ declare function config:expath-descriptor() as element(expath:package) {
     $config:expath-descriptor
 };
 
-declare function config:storage-info() as element(cfgx:storage) {
-    $config:cfgs/cfgx:storage
+declare function config:storage-info()  {
+    let $storage-info := $config:cfgs/cfgx:storage
+    let $path := data($storage-info/@path)
+    let $user := data($storage-info/@user)
+    return map {
+        "db-path" := concat("xmldb:exist://", $path),
+        "path" := $path,
+        "user" := $user
+    }
 };

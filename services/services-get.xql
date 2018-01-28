@@ -5,7 +5,15 @@ module namespace client-get="http://gawati.org/xq/client-db/services/get";
 import module namespace rest = "http://exquery.org/ns/restxq";
 import module namespace sm = "http://exist-db.org/xquery/securitymanager";
 
+import module namespace store = "http://gawati.org/1.0/client/store" at "../modules/store.xqm";
 
+
+declare 
+    %rest:GET
+    %rest:path("/test")
+function client-get:test() {
+    store:doc-exists('this') 
+ };
 
 declare
     %rest:GET
