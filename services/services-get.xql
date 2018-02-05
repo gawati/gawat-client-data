@@ -12,7 +12,7 @@ declare
     %rest:GET
     %rest:path("/test")
 function client-get:test() {
-    store:doc-exists('this') 
+    <xml />
  };
 
 declare

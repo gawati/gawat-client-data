@@ -36,3 +36,90 @@ function client-post:save-xml($json) {
     }
 };
 
+declare function local:wrap-package($doc) {
+   <gwd:packageListing  
+        timestamp="{current-dateTime()}" 
+        xmlns:gwd="http://gawati.org/ns/1.0/data">
+        {$doc}
+    </gwd:packageListing>
+};
+
+(:~
+:
+: Returns a full XML Document wrapped in a gwd:package
+:
+:
+:)
+declare
+    %rest:POST("{$json}")
+    %rest:path("/getXml")
+    %rest:consumes("application/json")
+    %rest:produces("application/json")
+    %output:media-type("application/json")
+    %output:method("json")  
+function client-post:get-xml($json) {
+   let $data := parse-json(util:base64-decode($json))
+   return
+    try {
+        let $doc := util:parse($data?data)
+        let $iri := $data?iri
+        let $doc := store:get-doc($iri)
+        return 
+            if (count($doc) eq 0) then 
+              <return>
+                <error code="doc_not_found" message="document not found" />
+              </return>
+            else
+              $doc
+    } catch * {
+        <return>
+            <error code="sys_err_{$err:code}" message="Caught error {$err:code}: {$err:description}" />
+        </return>
+    }
+};
+
+
+declare
+    %rest:POST("{$json}")
+    %rest:path("/getDocuments")
+    %rest:consumes("application/json")
+    %rest:produces("application/json")
+    %output:media-type("application/json")
+    %output:method("json")  
+function client-post:get-documents($json) {
+   let $data := parse-json(util:base64-decode($json))
+   return
+    try {
+        let $docTypes := $data?docTypes
+        let $docs := store:get-docs($docTypes)
+        return 
+            if (count($docs) eq 0) then 
+              <return>
+                <error code="docs_not_found" message="documents not found" />
+              </return>
+            else
+              local:wrap-package($docs)
+    } catch * {
+        <return>
+            <error code="sys_err_{$err:code}" message="Caught error {$err:code}: {$err:description}" />
+        </return>
+    }
+};
+
+
+
+declare
+    %rest:POST("{$json}")
+    %rest:path("/updateXml")
+    %rest:consumes("application/json")
+    %rest:produces("application/json")
+    %output:media-type("application/json")
+    %output:method("json")  
+function client-post:update-xml($json) {
+    (:
+    {data: [{name="docTitle", value="" } ] }
+    :)
+    let $obj := parse-json(util:base64-decode($json))
+    return store:update-doc($obj?iri, $obj?data)
+};
+
