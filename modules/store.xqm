@@ -23,12 +23,12 @@ declare function store:exists-doc($exprIriThis as xs:string) {
 
 declare function store:get-doc($exprIriThis as xs:string) {
     let $s-map := config:storage-info()
-    let $docs := collection($s-map("path"))//an:akomaNtoso[
+    let $doc := collection($s-map("path"))//an:akomaNtoso[
         ./an:*/an:meta/an:identification/an:FRBRExpression/an:FRBRthis[
             @value eq $exprIriThis
             ]
-        ]
-    return $docs
+        ]/ancestor::node()
+    return $doc
 };
 
 

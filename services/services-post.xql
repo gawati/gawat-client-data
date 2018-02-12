@@ -61,7 +61,6 @@ function client-post:get-xml($json) {
    let $data := parse-json(util:base64-decode($json))
    return
     try {
-        let $doc := util:parse($data?data)
         let $iri := $data?iri
         let $doc := store:get-doc($iri)
         return 
