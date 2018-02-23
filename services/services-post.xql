@@ -20,10 +20,11 @@ function client-post:save-xml($json) {
     try {
         let $doc := util:parse($data?data)
         let $iri := $data?iri
+        let $update := $data?update
         let $file-xml := $data?fileXml
         let $exists := store:exists-doc($iri)
         return 
-            if ($exists) then 
+            if ($exists and $update ne true()) then 
               <return>
                 <error code="exists_cannot_overwrite" message="file exists cannot overwrite" />
               </return>
