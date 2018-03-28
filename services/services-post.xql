@@ -9,7 +9,7 @@ import module namespace store="http://gawati.org/1.0/client/store" at "../module
 
 declare
     %rest:POST("{$json}")
-    %rest:path("/saveXml")
+    %rest:path("/gwdc/document/add")
     %rest:consumes("application/json")
     %rest:produces("application/json")
     %output:media-type("application/json")
@@ -53,7 +53,7 @@ declare function local:wrap-package($doc) {
 :)
 declare
     %rest:POST("{$json}")
-    %rest:path("/getXml")
+    %rest:path("/gwdc/document/load")
     %rest:consumes("application/json")
     %rest:produces("application/json")
     %output:media-type("application/json")
@@ -81,7 +81,7 @@ function client-post:get-xml($json) {
 
 declare
     %rest:POST("{$json}")
-    %rest:path("/getDocuments")
+    %rest:path("/gwdc/documents")
     %rest:consumes("application/json")
     %rest:produces("application/json")
     %output:media-type("application/json")
@@ -110,7 +110,7 @@ function client-post:get-documents($json) {
 
 declare
     %rest:POST("{$json}")
-    %rest:path("/updateXml")
+    %rest:path("/gwdc/document/edit")
     %rest:consumes("application/json")
     %rest:produces("application/json")
     %output:media-type("application/json")
