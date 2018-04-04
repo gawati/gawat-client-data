@@ -32,10 +32,18 @@ declare function store:get-doc($exprIriThis as xs:string) {
 };
 
 
-declare function store:get-docs($type as xs:string) {
+declare function store:get-docs($type as xs:string, $count as xs:integer, $from as xs:integer) {
     let $s-map := config:storage-info()
     let $docs := collection($s-map("path"))//an:akomaNtoso/ancestor::node()
-    return $docs
+    let $total-docs := count($docs)
+    return map {
+         "records" := $total-docs,
+         "pageSize" := $count,
+         "itemsFrom" := $from,                    
+         "totalPages" := ceiling($total-docs div $count) ,
+         "currentPage" := xs:integer($from div $count) + 1,    
+         "data" := $docs
+        }
 };
 
 

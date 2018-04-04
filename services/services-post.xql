@@ -37,11 +37,15 @@ function client-post:save-xml($json) {
     }
 };
 
-declare function local:wrap-package($doc) {
+declare function local:wrap-package($map-docs, $count as xs:integer, $from as xs:integer) {
    <gwd:packageListing  
         timestamp="{current-dateTime()}" 
+        records="{$map-docs("records")}"
+        pageSize="{$count}"
+        itemsFrom="{$from}"
+        currentPage="{$map-docs('currentPage')}"
         xmlns:gwd="http://gawati.org/ns/1.0/data">
-        {$doc}
+        {$map-docs("data")}
     </gwd:packageListing>
 };
 
@@ -91,14 +95,16 @@ function client-post:get-documents($json) {
    return
     try {
         let $docTypes := $data?docTypes
-        let $docs := store:get-docs($docTypes)
+        let $count := $data?pageSize
+        let $from := $data?itemsFrom
+        let $map-docs := store:get-docs($docTypes, xs:integer($count), xs:integer($from))
         return 
-            if (count($docs) eq 0) then 
+            if (count($map-docs("data")) eq 0) then 
               <return>
                 <error code="docs_not_found" message="documents not found" />
               </return>
             else
-              local:wrap-package($docs)
+              local:wrap-package($map-docs, xs:integer($count), xs:integer($from))
     } catch * {
         <return>
             <error code="sys_err_{$err:code}" message="Caught error {$err:code}: {$err:description}" />
