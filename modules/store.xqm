@@ -42,7 +42,7 @@ declare function store:get-docs($type as xs:string, $count as xs:integer, $from 
          "itemsFrom" := $from,                    
          "totalPages" := ceiling($total-docs div $count) ,
          "currentPage" := xs:integer($from div $count) + 1,    
-         "data" := $docs
+         "data" := subsequence($docs, $from, $count)
         }
 };
 
