@@ -9,7 +9,7 @@ pipeline {
         }
         stage('Setup') {
             steps {
-                sh 'ant xar'
+                sh 'echo "No setup"'
             }
         }
         stage('Build') {
