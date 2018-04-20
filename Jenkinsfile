@@ -1,11 +1,6 @@
 pipeline {
     agent any
 
-//  define {
-//    def COLOR_MAP = ['SUCCESS': 'good', 'FAILURE': 'danger', 'UNSTABLE': 'danger', 'ABORTED': 'danger']
-//    def STATUS_MAP = ['SUCCESS': 'success', 'FAILURE': 'failed', 'UNSTABLE': 'failed', 'ABORTED': 'failed']
-//  }
-
     stages {
         stage('Prerun Diag') {
             steps {
@@ -17,13 +12,24 @@ pipeline {
                 sh 'ant xar'
             }
         }
+        stage('Build') {
+            steps {
+                script {
+                    sh '''
+wget -qO- http://dl.gawati.org/dev/jenkinslib-latest.tbz | tar -xvjf -
+. ./jenkinslib.sh
+makebuild
+'''
+                }
+            }
+        }
         stage('Upload') {
             steps {
                 sh 'rm -rf .gitignore .git Jenkinsfile'
                 script {
                     sh '''
-wget -qO- http://dl.gawati.org/dev/jenkinslib-latest.tbz | tar -xvjf -
 . ./jenkinslib.sh
+cd build
 PkgXar
 PkgLinkLatest
 '''
@@ -39,7 +45,6 @@ PkgLinkLatest
 
     post {
         always {
-//            slackSend (color: COLOR_MAP[currentBuild.currentResult], message: "${currentBuild.currentResult}: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
             slackSend (message: "${currentBuild.currentResult}: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
         }
         failure {
