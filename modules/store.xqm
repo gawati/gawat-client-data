@@ -4,11 +4,64 @@ declare namespace xmldb="http://exist-db.org/xquery/xmldb";
 
 declare namespace cfgx="http://gawati.org/client/config";
 declare namespace an="http://docs.oasis-open.org/legaldocml/ns/akn/3.0";
+declare namespace gwd="http://gawati.org/ns/1.0/data";
+declare namespace gw="http://gawati.org/ns/1.0";
 
 import module namespace functx="http://www.functx.com" at "./functx.xql" ;
 import module namespace config="http://gawati.org/client-data/config" at "./config.xqm";
 import module namespace andoc="http://exist-db.org/xquery/apps/akomantoso30" at "./akomantoso.xql";
 import module namespace utils="http://gawati.org/1.0/client/utils" at "./utils.xql" ;
+
+(: store:transit-document($doc-iri, $state-name, $state-label, $obj?state?permission) :)
+declare function store:transit-document($doc-iri as xs:string, $state-name as xs:string, $state-label as xs:string, $json-permission) {
+    let $permissions-node :=
+        <gwd:permissions> {
+          for $entry in $json-permission?*
+            return
+                <permission name="{$entry?name}">
+                    <roles> {
+                      for $role-entry in $entry?roles?*
+                      return
+                        <role name="{$role-entry}" />
+                    }</roles>
+                </permission>
+        } </gwd:permissions>
+    let $workflow-node := 
+        <gwd:workflow>
+            <gwd:state status="{$state-name}" label="{$state-label}" />
+        </gwd:workflow>
+    let $doc := store:get-doc($doc-iri)
+    let $switch-map := map {
+        "workflow" := $workflow-node,
+        "permissions" := $permissions-node
+    }
+    return local:dispatcher($doc, $switch-map)
+    (:
+    let $doc := store:get-doc($exprIriThis)
+    return local:dispatcher($doc)
+    :)
+};
+
+declare function local:dispatcher($nodes as node()*, $switch-map) as item()* {
+    for $node in $nodes 
+    return
+        typeswitch ($node)
+            case text() return $node
+            case comment() return $node
+            case element(gwd:workflow) return $switch-map("workflow")
+            case element(gwd:permissions) return $switch-map("permissions")
+            case element(gwd:dateTime) return local:action-prop-dateTime($node)
+            default return local:default($node, $switch-map)
+};
+
+declare function local:default($node as node()*, $switch-map) as item()* {
+    element {name($node)} {($node/@*, local:dispatcher($node/node(), $switch-map))}
+};
+
+declare function local:action-prop-dateTime($node as node()) as item()* {
+    $node
+    
+};
 
 declare function store:exists-doc($exprIriThis as xs:string) {
     let $s-map := config:storage-info()

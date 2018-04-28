@@ -10,17 +10,11 @@ declare namespace pkg="http://expath.org/ns/pkg";
 import module namespace config="http://gawati.org/client-data/config" at "../modules/config.xqm";
 import module namespace store = "http://gawati.org/1.0/client/store" at "../modules/store.xqm";
 
-
-declare 
-    %rest:GET
-    %rest:path("/test")
-function client-get:test() {
-    <xml />
- };
+    
 
 declare
     %rest:GET
-    %rest:path("/sec-test")
+    %rest:path("/gwdc/sec-test")
 function client-get:sec-test() {
     <sec-test>
         <before-login>{sm:id()}</before-login>

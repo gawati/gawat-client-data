@@ -129,3 +129,40 @@ function client-post:update-xml($json) {
     return store:update-doc($obj?iri, $obj?data)
 };
 
+(:
+: {
+:    "aknType": "act",
+:    "aknSubType": "legge",
+:    "state": {
+:        "name": "editable",
+:        "title": "Editable",
+:        "level": "2",
+:        "color": "initial",
+:        "permission": [
+:            {
+:                "name": "view",
+:                "roles": "client.Admin client.Editor"
+:            },
+:            ...
+:            ]
+:         }
+:  }
+:
+:
+:
+:)
+declare
+    %rest:POST("{$json}")
+    %rest:path("/gwdc/document/transit")
+    %rest:consumes("application/json")
+    %rest:produces("application/json")
+    %output:media-type("application/json")
+    %output:method("json")  
+function client-post:transit($json) {
+    let $obj := parse-json(util:base64-decode($json))
+    let $state-name := $obj?state?name
+    let $state-label := $obj?state?title
+    let $doc-iri := $obj?docIri
+    let $ret := store:transit-document($doc-iri, $state-name, $state-label, $obj?state?permission)
+    return $ret
+};
