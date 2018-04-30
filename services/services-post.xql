@@ -167,3 +167,45 @@ function client-post:transit($json) {
     let $ret := store:transit-document($doc-iri, $file-name, $state-name, $state-label, $obj?state?permission) 
     return $ret
 };
+
+(:
+: {
+:    "docIri": "/akn/ke/act/legge/1970-06-03/Cap_44/eng@/!main",
+:    "attachments": [
+        { 
+            index: 1,
+            showAs: 'AIF PROJECT',
+            iriThis: '/akn/ke/act/legge/1970-06-03/Cap_44/eng@/!main_1',
+            origFileName: '2015-10-28 09_57_44-Greenshot.png',
+            fileName: 'akn_ke_act_legge_1970-06-03_Cap_44_eng_main_1.png',
+            fileType: '.png',
+            type: 'embedded' 
+        },
+        { 
+            index: 2,
+            showAs: 'DC',
+            iriThis: '/akn/ke/act/legge/1970-06-03/Cap_44/eng@/!main_2',
+            origFileName: '8SRFPv2.doc',
+            fileName: 'akn_ke_act_legge_1970-06-03_Cap_44_eng_main_2.doc',
+            fileType: '.doc',
+            type: 'embedded' 
+        }
+        ]
+:  }
+:
+:
+:
+:)
+declare
+    %rest:POST("{$json}")
+    %rest:path("/gwdc/document/attachments")
+    %rest:consumes("application/json")
+    %rest:produces("application/json")
+    %output:media-type("application/json")
+    %output:method("json")   
+function client-post:attachments($json) {
+    let $obj := parse-json(util:base64-decode($json))
+    let $doc-iri := $obj?docIri
+    let $ret := store:save-attachments($doc-iri, $obj?attachments) 
+    return $ret
+};

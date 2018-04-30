@@ -15,6 +15,8 @@ declare function docrewrite:rewriter($nodes as node()*, $switch-map) as item()* 
             case element(gwd:workflow) return local:dispatch-element($node, $switch-map, "workflow")
             case element(gwd:permissions) return local:dispatch-element($node, $switch-map, "permissions")
             case element(gw:dateTime) return local:dispatch-dateTime-handler($node, $switch-map)
+            case element(gw:embeddedContents) return local:dispatch-element($node, $switch-map, "embeddedContents")
+            case element(an:book) return local:dispatch-element($node, $switch-map, "book")
             default return local:default($node, $switch-map)
 };
 

@@ -27,3 +27,9 @@ declare function utils:iri-upto-date-part($iri as xs:string) {
             "/"
         )
 };
+
+declare function utils:document-name($iri as xs:string) {
+    let $hyphenated := replace($iri, "/", "_")
+    let $name := replace($hyphenated, "@|!|^_", "")
+    return concat($name, ".xml")
+};
