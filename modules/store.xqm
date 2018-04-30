@@ -14,6 +14,55 @@ import module namespace utils="http://gawati.org/1.0/client/utils" at "./utils.x
 import module namespace docrewrite="http://gawati.org/1.0/client/docrewrite" at "./docrewrite.xql";
 
 (:
+ : Save the attachments in the document. Saving involves rewriting the current set of attachments in the <embeddedContents> element
+ : Writing the new <book> node with updated componentRef information for each attachment, into the document.
+ : $obj?attachments) 
+ :)
+declare function store:save-attachments($doc-iri as xs:string, $json-attachments) {
+    (: generate the new embeddedContents node :)
+    let $embeddedContents-node := local:attachments-rewrite-embeddedContents($json-attachments)
+    (: generate the new book node :)
+    let $book-node := local:attachments-rewrite-book($json-attachments)
+    (: get the existing document from the database :)
+    let $doc := store:get-doc($doc-iri)
+    (: build a map of nodes to rewrite :)
+    let $switch-map := map {
+        "embeddedContents" := $embeddedContents-node,
+        "book" := $book-node
+    }
+    (: create a new document based on the map :)
+    let $rewritten-doc := docrewrite:rewriter($doc, $switch-map)
+    (: write rewritten doc to the database:)
+    let $file-xml := utils:document-name($doc-iri)
+    return store:save-doc($doc-iri, $rewritten-doc, $file-xml) 
+};
+
+declare function local:attachments-rewrite-embeddedContents($json-attachments) {
+    <gw:embeddedContents> {
+      for $entry in $json-attachments?*
+        return
+            <an:embeddedContent eId="embedded-doc-{$entry?index}"
+                                type="{$entry?type}" 
+                                fileType="{$entry?fileType}" 
+                                file="{$entry?fileName}" 
+                                origFileName="{$entry?origFileName}" 
+                                state="true" />
+    } </gw:embeddedContents>
+};
+
+declare function local:attachments-rewrite-book($json-attachments) {
+    <an:book refersTo="#mainDocument"> {
+      for $entry in $json-attachments?*
+        return
+            <an:componentRef src="{$entry?iriThis}" 
+                             alt="{$entry?origFileName}" 
+                             GUID="#embedded-doc-{$entry?index}" 
+                             showAs="{$entry?showAs}" />
+    } </an:book>
+};
+
+
+(:
  : Transit the document from one state to another. Transiting involves rewriting the current state in the <workflow> element
  : Writing new permission information into the document based on the state.
  : Writing new modified dates into the document
