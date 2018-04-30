@@ -11,56 +11,51 @@ import module namespace functx="http://www.functx.com" at "./functx.xql" ;
 import module namespace config="http://gawati.org/client-data/config" at "./config.xqm";
 import module namespace andoc="http://exist-db.org/xquery/apps/akomantoso30" at "./akomantoso.xql";
 import module namespace utils="http://gawati.org/1.0/client/utils" at "./utils.xql" ;
+import module namespace docrewrite="http://gawati.org/1.0/client/docrewrite" at "./docrewrite.xql";
 
-(: store:transit-document($doc-iri, $state-name, $state-label, $obj?state?permission) :)
-declare function store:transit-document($doc-iri as xs:string, $state-name as xs:string, $state-label as xs:string, $json-permission) {
-    let $permissions-node :=
-        <gwd:permissions> {
-          for $entry in $json-permission?*
-            return
-                <permission name="{$entry?name}">
-                    <roles> {
-                      for $role-entry in $entry?roles?*
-                      return
-                        <role name="{$role-entry}" />
-                    }</roles>
-                </permission>
-        } </gwd:permissions>
-    let $workflow-node := 
-        <gwd:workflow>
-            <gwd:state status="{$state-name}" label="{$state-label}" />
-        </gwd:workflow>
+(:
+ : Transit the document from one state to another. Transiting involves rewriting the current state in the <workflow> element
+ : Writing new permission information into the document based on the state.
+ : Writing new modified dates into the document
+ : $obj?state?permission) 
+ :)
+declare function store:transit-document($doc-iri as xs:string, $file-xml as xs:string, $state-name as xs:string, $state-label as xs:string, $json-permission) {
+    (: generate the new permissions node :)
+    let $permissions-node := local:transit-rewrite-permissions($json-permission)
+    (: generate the new workflow node :)
+    let $workflow-node := local:transit-rewrite-workflow($state-name, $state-label)
+    (: get the existing document from the database :)
     let $doc := store:get-doc($doc-iri)
+    (: build a map of nodes to rewrite :)
     let $switch-map := map {
         "workflow" := $workflow-node,
         "permissions" := $permissions-node
     }
-    return local:dispatcher($doc, $switch-map)
-    (:
-    let $doc := store:get-doc($exprIriThis)
-    return local:dispatcher($doc)
-    :)
+    (: create a new document based on the map :)
+    let $rewritten-doc := docrewrite:rewriter($doc, $switch-map)
+    (: write rewritten doc to the database:)
+    return store:save-doc($doc-iri, $rewritten-doc, $file-xml) 
 };
 
-declare function local:dispatcher($nodes as node()*, $switch-map) as item()* {
-    for $node in $nodes 
-    return
-        typeswitch ($node)
-            case text() return $node
-            case comment() return $node
-            case element(gwd:workflow) return $switch-map("workflow")
-            case element(gwd:permissions) return $switch-map("permissions")
-            case element(gwd:dateTime) return local:action-prop-dateTime($node)
-            default return local:default($node, $switch-map)
+declare function local:transit-rewrite-workflow($state-name as xs:string, $state-label as xs:string) {
+    <gwd:workflow>
+        <gwd:state status="{$state-name}" label="{$state-label}" />
+    </gwd:workflow>
 };
 
-declare function local:default($node as node()*, $switch-map) as item()* {
-    element {name($node)} {($node/@*, local:dispatcher($node/node(), $switch-map))}
-};
 
-declare function local:action-prop-dateTime($node as node()) as item()* {
-    $node
-    
+declare function local:transit-rewrite-permissions($json-permission) {
+    <gwd:permissions> {
+      for $entry in $json-permission?*
+        return
+            <permission name="{$entry?name}">
+                <roles> {
+                  for $role-entry in $entry?roles?*
+                  return
+                    <role name="{$role-entry}" />
+                }</roles>
+            </permission>
+    } </gwd:permissions>
 };
 
 declare function store:exists-doc($exprIriThis as xs:string) {
@@ -98,7 +93,6 @@ declare function store:get-docs($type as xs:string, $count as xs:integer, $from 
          "data" := subsequence($docs, $from, $count)
         }
 };
-
 
 
 declare function store:save-doc($iri as xs:string, $doc as item()*, $file-xml as xs:string) {
