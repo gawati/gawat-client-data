@@ -157,12 +157,13 @@ declare
     %rest:consumes("application/json")
     %rest:produces("application/json")
     %output:media-type("application/json")
-    %output:method("json")  
+    %output:method("json")   
 function client-post:transit($json) {
     let $obj := parse-json(util:base64-decode($json))
     let $state-name := $obj?state?name
     let $state-label := $obj?state?title
     let $doc-iri := $obj?docIri
-    let $ret := store:transit-document($doc-iri, $state-name, $state-label, $obj?state?permission)
+    let $file-name:= $obj?fileName
+    let $ret := store:transit-document($doc-iri, $file-name, $state-name, $state-label, $obj?state?permission) 
     return $ret
 };
