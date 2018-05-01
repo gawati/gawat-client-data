@@ -163,8 +163,7 @@ function client-post:transit($json) {
     let $state-name := $obj?state?name
     let $state-label := $obj?state?title
     let $doc-iri := $obj?docIri
-    let $file-name:= $obj?fileName
-    let $ret := store:transit-document($doc-iri, $file-name, $state-name, $state-label, $obj?state?permission) 
+    let $ret := store:transit-document($doc-iri, $state-name, $state-label, $obj?state?permission) 
     return $ret
 };
 
