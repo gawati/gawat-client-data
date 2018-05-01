@@ -1,7 +1,8 @@
 module namespace store="http://gawati.org/1.0/client/store";
 
 declare namespace xmldb="http://exist-db.org/xquery/xmldb";
-
+ declare namespace util="http://exist-db.org/xquery/util";
+ 
 declare namespace cfgx="http://gawati.org/client/config";
 declare namespace an="http://docs.oasis-open.org/legaldocml/ns/akn/3.0";
 declare namespace gwd="http://gawati.org/ns/1.0/data";
@@ -32,8 +33,10 @@ declare function store:save-attachments($doc-iri as xs:string, $json-attachments
     }
     (: create a new document based on the map :)
     let $rewritten-doc := docrewrite:rewriter($doc, $switch-map)
+    (: Get file name for the doc :)
+    let $doc := store:get-doc($doc-iri)
+    let $file-xml := util:document-name($doc)
     (: write rewritten doc to the database:)
-    let $file-xml := utils:document-name($doc-iri)
     return store:save-doc($doc-iri, $rewritten-doc, $file-xml) 
 };
 
