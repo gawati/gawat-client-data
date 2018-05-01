@@ -34,7 +34,6 @@ declare function store:save-attachments($doc-iri as xs:string, $json-attachments
     (: create a new document based on the map :)
     let $rewritten-doc := docrewrite:rewriter($doc, $switch-map)
     (: Get file name for the doc :)
-    let $doc := store:get-doc($doc-iri)
     let $file-xml := util:document-name($doc)
     (: write rewritten doc to the database:)
     return store:save-doc($doc-iri, $rewritten-doc, $file-xml) 
@@ -71,7 +70,7 @@ declare function local:attachments-rewrite-book($json-attachments) {
  : Writing new modified dates into the document
  : $obj?state?permission) 
  :)
-declare function store:transit-document($doc-iri as xs:string, $file-xml as xs:string, $state-name as xs:string, $state-label as xs:string, $json-permission) {
+declare function store:transit-document($doc-iri as xs:string, $state-name as xs:string, $state-label as xs:string, $json-permission) {
     (: generate the new permissions node :)
     let $permissions-node := local:transit-rewrite-permissions($json-permission)
     (: generate the new workflow node :)
@@ -85,6 +84,8 @@ declare function store:transit-document($doc-iri as xs:string, $file-xml as xs:s
     }
     (: create a new document based on the map :)
     let $rewritten-doc := docrewrite:rewriter($doc, $switch-map)
+    (: Get file name for the doc :)
+    let $file-xml := util:document-name($doc)
     (: write rewritten doc to the database:)
     return store:save-doc($doc-iri, $rewritten-doc, $file-xml) 
 };
