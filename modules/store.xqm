@@ -132,6 +132,22 @@ declare function store:get-doc($exprIriThis as xs:string) {
     return $doc
 };
 
+declare function store:exists-doc($exprIriThis as xs:string) {
+    let $s-map := config:storage-info()
+    let $doc := collection($s-map("path"))//an:akomaNtoso[
+        ./an:*/an:meta/an:identification/an:FRBRExpression/an:FRBRthis[
+            @value eq $exprIriThis
+            ]
+        ]/ancestor::node()
+    return 
+        if (count($doc) gt 0) then 
+            true() 
+        else 
+            false()
+};
+
+
+
 
 declare function store:get-docs($type as xs:string, $count as xs:integer, $from as xs:integer) {
     let $s-map := config:storage-info()

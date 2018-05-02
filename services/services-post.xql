@@ -83,6 +83,43 @@ function client-post:get-xml($json) {
 };
 
 
+(:~
+:
+: Checks if a document exists
+:
+:)
+declare
+    %rest:POST("{$json}")
+    %rest:path("/gwdc/document/exists")
+    %rest:consumes("application/json")
+    %rest:produces("application/json")
+    %output:media-type("application/json")
+    %output:method("json")  
+function client-post:exists-xml($json) {
+   let $data := parse-json(util:base64-decode($json))
+   return
+    try {
+        let $iri := $data?iri
+        let $doc-exists := store:exists-doc($iri)
+        return 
+            if ($doc-exists eq true()) then 
+              <return>
+                <success code="doc_found" message="document found" />
+              </return>
+            else
+              <return>
+                <error code="doc_not_found" message="document not found" />
+              </return>
+    } catch * {
+        <return>
+            <error code="sys_err_{$err:code}" message="Caught error {$err:code}: {$err:description}" />
+        </return>
+    }
+};
+
+
+
+
 declare
     %rest:POST("{$json}")
     %rest:path("/gwdc/documents")
