@@ -145,34 +145,6 @@ function client-post:document-permissions($json) {
     }
 };
 
-declare
-    %rest:POST("{$json}")
-    %rest:path("/gwdc/document/permissions")
-    %rest:consumes("application/json")
-    %rest:produces("application/json")
-    %output:media-type("application/json")
-    %output:method("json")  
-function client-post:document-permissions($json) {
-   let $data := parse-json(util:base64-decode($json))
-   return
-    try {
-        let $iri := $data?iri
-        let $doc := store:get-doc($iri)
-        return 
-            if (count($doc) gt 0) then 
-               $doc/gwd:permissions
-            else
-              <return>
-                <error code="doc_not_found" message="document not found" />
-              </return>
-    } catch * {
-        <return>
-            <error code="sys_err_{$err:code}" message="Caught error {$err:code}: {$err:description}" />
-        </return>
-    }
-};
-
-
 
 declare
     %rest:POST("{$json}")
