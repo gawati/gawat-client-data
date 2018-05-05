@@ -160,7 +160,8 @@ function client-post:get-documents($json) {
         let $docTypes := $data?docTypes
         let $count := $data?pageSize
         let $from := $data?itemsFrom
-        let $map-docs := store:get-docs($docTypes, xs:integer($count), xs:integer($from))
+        let $roles := $data?roles
+        let $map-docs := store:get-docs($docTypes, xs:integer($count), xs:integer($from), $roles)
         return 
             if (count($map-docs("data")) eq 0) then 
               <return>

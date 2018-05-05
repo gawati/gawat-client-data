@@ -27,3 +27,10 @@ declare function utils:iri-upto-date-part($iri as xs:string) {
             "/"
         )
 };
+
+declare function utils:value-intersect
+  ( $arg1 as xs:anyAtomicType* ,
+    $arg2 as xs:anyAtomicType* )  as xs:anyAtomicType* {
+
+  distinct-values($arg1[.=$arg2])
+ } ;

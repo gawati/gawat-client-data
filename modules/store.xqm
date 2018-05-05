@@ -146,20 +146,60 @@ declare function store:exists-doc($exprIriThis as xs:string) {
             false()
 };
 
+(:
+ : Checks if any of the client roles are there in any of the tier's roles
+ : for the given document.
+:)
+declare function store:role-exists($doc, $tier, $client-roles) {
+    let $doc-roles := $doc/gwd:permissions/gwd:permission[contains($tier,@name)]/gwd:roles/gwd:role/@name
+    let $common-roles := functx:value-intersect($client-roles, $doc-roles)
+    return count($common-roles) > 0
+};
 
+(:
+ : Listing permissions are checked based on a hierarchy of permissions.
+ : If the client role has any of the 3 tiers of permissions specified in the document, 
+ : that document can be listed. 
+:)
+declare function store:is-listing-permitted($doc, $client-roles) {
+  let $tier-1 := ('transit', 'delete', 'edit')
+  let $tier-2 := ('view')
+  let $tier-3 := ('list')
+  
+  return
+  if (store:role-exists($doc, $tier-1, $client-roles) or 
+      store:role-exists($doc, $tier-2, $client-roles) or
+      store:role-exists($doc, $tier-3, $client-roles)) then
+      true()
+  else
+      false()
+};
 
+(:
+ : Filter documents that are permissible to list for the client based on client roles.
+:)
+declare function store:filter-docs-listing($docs, $client-roles) {
+    array {
+        for $doc in $docs
+        where store:is-listing-permitted($doc, $client-roles)
+        return $doc   
+    }
+};
 
-declare function store:get-docs($type as xs:string, $count as xs:integer, $from as xs:integer) {
+declare function store:get-docs($type as xs:string, $count as xs:integer, $from as xs:integer, $roles as array(xs:string)) {
     let $s-map := config:storage-info()
     let $docs := collection($s-map("path"))//an:akomaNtoso/ancestor::node()
-    let $total-docs := count($docs)
+    
+    let $filtered-docs := store:filter-docs-listing($docs, $roles)
+    let $total-docs := count($filtered-docs)
+    
     return map {
          "records" := $total-docs,
          "pageSize" := $count,
          "itemsFrom" := $from,                    
          "totalPages" := ceiling($total-docs div $count) ,
          "currentPage" := xs:integer($from div $count) + 1,    
-         "data" := subsequence($docs, $from, $count)
+         "data" := subsequence($filtered-docs, $from, $count)
         }
 };
 
