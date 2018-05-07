@@ -159,7 +159,8 @@ declare function store:role-exists($doc, $tier, $client-roles) {
 (:
  : Listing permissions are checked based on a hierarchy of permissions.
  : If the client role has any of the 3 tiers of permissions specified in the document, 
- : that document can be listed. 
+ : that document can be listed.
+ : Further actions are determined by permissions 
 :)
 declare function store:is-listing-permitted($doc, $client-roles) {
   let $tier-1 := ('transit', 'delete', 'edit')
@@ -179,11 +180,9 @@ declare function store:is-listing-permitted($doc, $client-roles) {
  : Filter documents that are permissible to list for the client based on client roles.
 :)
 declare function store:filter-docs-listing($docs, $client-roles) {
-    array {
-        for $doc in $docs
-        where store:is-listing-permitted($doc, $client-roles)
-        return $doc   
-    }
+    for $doc in $docs
+    where store:is-listing-permitted($doc, $client-roles)
+    return $doc   
 };
 
 declare function store:get-docs($type as xs:string, $count as xs:integer, $from as xs:integer, $roles as array(xs:string)) {
