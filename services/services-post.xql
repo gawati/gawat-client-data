@@ -53,7 +53,7 @@ declare function local:wrap-package($map-docs, $count as xs:integer, $from as xs
 (:~
 :
 : Returns a full XML Document wrapped in a gwd:package
-:
+: Returns a JSON object
 :
 :)
 declare
@@ -63,7 +63,7 @@ declare
     %rest:produces("application/json")
     %output:media-type("application/json")
     %output:method("json")  
-function client-post:get-xml($json) {
+function client-post:get-json($json) {
    let $data := parse-json(util:base64-decode($json))
    return
     try {
@@ -83,6 +83,35 @@ function client-post:get-xml($json) {
     }
 };
 
+(:~
+:
+: Returns a full XML Document wrapped in a gwd:package
+: Returns the actual XML 
+:)
+declare
+    %rest:POST("{$json}")
+    %rest:path("/gwdc/document/load/xml")
+    %rest:consumes("application/json")
+    %rest:produces("application/xml", "text/xml")
+function client-post:get-xml($json) {
+   let $data := parse-json(util:base64-decode($json))
+   return
+    try {
+        let $iri := $data?iri
+        let $doc := store:get-doc($iri)
+        return 
+            if (count($doc) eq 0) then 
+              <return>
+                <error code="doc_not_found" message="document not found" />
+              </return>
+            else
+              $doc
+    } catch * {
+        <return>
+            <error code="sys_err_{$err:code}" message="Caught error {$err:code}: {$err:description}" />
+        </return>
+    }
+};
 
 (:~
 :
