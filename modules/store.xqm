@@ -227,15 +227,14 @@ declare function store:get-filtered-docs($type as xs:string, $count as xs:intege
         then $docs3//gwd:workflow/gwd:state[@status eq $status]/ancestor::node()
         else $docs3//gwd:workflow/ancestor::node()
     
-    let $docs-filtered := $docs1 intersect $docs2 intersect $docs3 intersect $docs4
-    let $total-docs := count($docs-filtered)
+    let $total-docs := count($docs4)
     return map {
          "records" := $total-docs,
          "pageSize" := $count,
          "itemsFrom" := $from,                    
          "totalPages" := ceiling($total-docs div $count) ,
          "currentPage" := xs:integer($from div $count) + 1,    
-         "data" := subsequence($docs-filtered, $from, $count)
+         "data" := subsequence($docs4, $from, $count)
         }
 };
 
