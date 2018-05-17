@@ -202,6 +202,42 @@ declare function store:get-docs($type as xs:string, $count as xs:integer, $from 
         }
 };
 
+declare function store:get-filtered-docs($type as xs:string, $count as xs:integer, $from as xs:integer, $roles as array(xs:string), $title as xs:string,$docType as xs:string,$fromDate as xs:string,$toDate as xs:string,$status as xs:string) {
+    let $s-map := config:storage-info()
+    let $docs := collection($s-map("path"))//an:akomaNtoso/ancestor::node()
+    let $filtered-docs := store:filter-docs-listing($docs, $roles)
+
+    let $docs1 := 
+       if ($filtered-docs//an:akomaNtoso/an:*/an:meta/an:publication[contains(@showAs | @name,$title)]/ancestor::node())
+       then $filtered-docs//an:akomaNtoso/an:*/an:meta/an:publication[contains(@showAs | @name,$title)]/ancestor::node()
+       else $filtered-docs//an:akomaNtoso/ancestor::node()
+    
+    let $docs2 := 
+       if ($docs1//an:akomaNtoso/an:*[@name eq $docType]/ancestor::node())
+       then $docs1//an:akomaNtoso/an:*[@name eq $docType]/ancestor::node()
+       else $docs1//an:akomaNtoso/ancestor::node()
+    
+    let $docs3 :=
+        if ($docs2//an:FRBRExpression/an:FRBRdate[(xs:date(@date)>=xs:date($fromDate)) and (xs:date(@date)<=xs:date($toDate))]/ancestor::node())
+        then $docs2//an:FRBRExpression/an:FRBRdate[(xs:date(@date)>=xs:date($fromDate)) and (xs:date(@date)<=xs:date($toDate))]/ancestor::node()
+        else $docs2//an:akomaNtoso/ancestor::node()
+     
+    let $docs4 := 
+        if ($docs3//gwd:workflow/gwd:state[@status eq $status]/ancestor::node())
+        then $docs3//gwd:workflow/gwd:state[@status eq $status]/ancestor::node()
+        else $docs3//gwd:workflow/ancestor::node()
+    
+    let $docs-filtered := $docs1 intersect $docs2 intersect $docs3 intersect $docs4
+    let $total-docs := count($docs-filtered)
+    return map {
+         "records" := $total-docs,
+         "pageSize" := $count,
+         "itemsFrom" := $from,                    
+         "totalPages" := ceiling($total-docs div $count) ,
+         "currentPage" := xs:integer($from div $count) + 1,    
+         "data" := subsequence($docs-filtered, $from, $count)
+        }
+};
 
 declare function store:save-doc($iri as xs:string, $doc as item()*, $file-xml as xs:string) {
     let $s-map := config:storage-info()
