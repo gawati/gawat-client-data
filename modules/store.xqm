@@ -202,19 +202,19 @@ declare function store:get-docs($type as xs:string, $count as xs:integer, $from 
         }
 };
 
-declare function store:get-filtered-docs($type as xs:string, $count as xs:integer, $from as xs:integer, $roles as array(xs:string), $title as xs:string,$docType as xs:string,$fromDate as xs:string,$toDate as xs:string,$status as xs:string) {
+declare function store:get-filtered-docs($type as xs:string, $count as xs:integer, $from as xs:integer, $roles as array(xs:string), $title as xs:string,$docType as array(xs:string),$fromDate as xs:string,$toDate as xs:string,$status as array(xs:string)) {
     let $s-map := config:storage-info()
     let $docs := collection($s-map("path"))//an:akomaNtoso/ancestor::node()
     let $filtered-docs := store:filter-docs-listing($docs, $roles)
-
+    
     let $docs1 := 
        if ($filtered-docs//an:akomaNtoso/an:*/an:meta/an:publication[contains(@showAs | @name,$title)]/ancestor::node())
        then $filtered-docs//an:akomaNtoso/an:*/an:meta/an:publication[contains(@showAs | @name,$title)]/ancestor::node()
        else $filtered-docs//an:akomaNtoso/ancestor::node()
     
     let $docs2 := 
-       if ($docs1//an:akomaNtoso/an:*[@name eq $docType]/ancestor::node())
-       then $docs1//an:akomaNtoso/an:*[@name eq $docType]/ancestor::node()
+       if ($docs1//an:akomaNtoso/an:*[@name = $docType]/ancestor::node())
+       then $docs1//an:akomaNtoso/an:*[@name = $docType]/ancestor::node()
        else $docs1//an:akomaNtoso/ancestor::node()
     
     let $docs3 :=
@@ -223,8 +223,8 @@ declare function store:get-filtered-docs($type as xs:string, $count as xs:intege
         else $docs2//an:akomaNtoso/ancestor::node()
      
     let $docs4 := 
-        if ($docs3//gwd:workflow/gwd:state[@status eq $status]/ancestor::node())
-        then $docs3//gwd:workflow/gwd:state[@status eq $status]/ancestor::node()
+        if ($docs3//gwd:workflow/gwd:state[@status = $status]/ancestor::node())
+        then $docs3//gwd:workflow/gwd:state[@status = $status]/ancestor::node()
         else $docs3//gwd:workflow/ancestor::node()
     
     let $total-docs := count($docs4)

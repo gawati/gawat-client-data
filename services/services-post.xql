@@ -56,18 +56,6 @@ declare function local:wrap-package($map-docs, $count as xs:integer, $from as xs
 :
 :
 :)
-
-declare function local:wrap-filtered-package($map-docs, $count as xs:integer, $from as xs:integer) {
-   <gwd:packageListing  
-        timestamp="{current-dateTime()}" 
-        records="{$map-docs("records")}"
-        pageSize="{$count}"
-        itemsFrom="{$from}"
-        currentPage="{$map-docs('currentPage')}"
-        xmlns:gwd="http://gawati.org/ns/1.0/data">
-        {$map-docs("data")}
-    </gwd:packageListing>
-};
 declare
     %rest:POST("{$json}")
     %rest:path("/gwdc/document/load")
@@ -196,7 +184,7 @@ declare
     %output:media-type("application/json")
     %output:method("json")  
 function client-post:get-filtered-documents($json) {
-   let $data := parse-json($json)
+   let $data := parse-json(util:base64-decode($json))
    return
     try {
         let $docTypes := $data?docTypes
@@ -208,14 +196,14 @@ function client-post:get-filtered-documents($json) {
         let $fromDate := $data?fromDate
         let $toDate := $data?toDate
         let $status := $data?status
-        let $map-docs := store:get-filtered-docs($docTypes, xs:integer($count), xs:integer($from), $roles, xs:string($title),xs:string($docType),xs:string($fromDate),xs:string($toDate),xs:string($status))
+        let $map-docs := store:get-filtered-docs($docTypes, xs:integer($count), xs:integer($from), $roles, xs:string($title),$docType,xs:string($fromDate),xs:string($toDate),$status)
         return 
             if (count($map-docs("data")) eq 0) then 
               <return>
                 <error code="docs_not_found" message="documents not found" />
               </return>
             else
-              local:wrap-filtered-package($map-docs, xs:integer($count), xs:integer($from))
+              local:wrap-package($map-docs, xs:integer($count), xs:integer($from))
     } catch * {
         <return>
             <error code="sys_err_{$err:code}" message="Caught error {$err:code}: {$err:description}" />
