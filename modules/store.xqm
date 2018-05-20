@@ -208,33 +208,53 @@ declare function store:get-filtered-docs($type as xs:string, $count as xs:intege
     let $filtered-docs := store:filter-docs-listing($docs, $roles)
     
     let $docs1 := 
-       if ($filtered-docs//an:akomaNtoso/an:*/an:meta/an:publication[contains(@showAs | @name,$title)]/ancestor::node())
-       then $filtered-docs//an:akomaNtoso/an:*/an:meta/an:publication[contains(@showAs | @name,$title)]/ancestor::node()
-       else $filtered-docs//an:akomaNtoso/ancestor::node()
-    
+     if($title != '')
+     then
+      if ($filtered-docs//an:akomaNtoso/an:*/an:meta/an:publication[contains(@showAs | @name,$title)]/ancestor::node())
+      then $filtered-docs//an:akomaNtoso/an:*/an:meta/an:publication[contains(@showAs | @name,$title)]/ancestor::node()
+      else ()
+     else $filtered-docs//an:akomaNtoso/ancestor::node()
+      
     let $docs2 := 
-       if ($docs1//an:akomaNtoso/an:*[@name = $docType]/ancestor::node())
-       then $docs1//an:akomaNtoso/an:*[@name = $docType]/ancestor::node()
-       else $docs1//an:akomaNtoso/ancestor::node()
+     if($docType != '')
+     then
+      if ($docs1//an:akomaNtoso/an:*[@name = $docType]/ancestor::node())
+      then $docs1//an:akomaNtoso/an:*[@name = $docType]/ancestor::node()
+      else ()
+     else $docs1//an:akomaNtoso/ancestor::node()
     
     let $docs3 :=
-        if ($docs2//an:FRBRExpression/an:FRBRdate[(xs:date(@date)>=xs:date($fromDate)) and (xs:date(@date)<=xs:date($toDate))]/ancestor::node())
-        then $docs2//an:FRBRExpression/an:FRBRdate[(xs:date(@date)>=xs:date($fromDate)) and (xs:date(@date)<=xs:date($toDate))]/ancestor::node()
-        else $docs2//an:akomaNtoso/ancestor::node()
+     if($fromDate != '')
+     then
+      if ($docs2//an:FRBRExpression/an:FRBRdate[(xs:date(@date)>=xs:date($fromDate))]/ancestor::node())
+      then $docs2//an:FRBRExpression/an:FRBRdate[(xs:date(@date)>=xs:date($fromDate))]/ancestor::node()
+      else ()
+     else $docs2//an:akomaNtoso/ancestor::node()
      
-    let $docs4 := 
-        if ($docs3//gwd:workflow/gwd:state[@status = $status]/ancestor::node())
-        then $docs3//gwd:workflow/gwd:state[@status = $status]/ancestor::node()
-        else $docs3//gwd:workflow/ancestor::node()
-    
-    let $total-docs := count($docs4)
+    let $docs4 :=
+      if($toDate != '')
+      then
+        if ($docs3//an:FRBRExpression/an:FRBRdate[(xs:date(@date)<=xs:date($toDate))]/ancestor::node())
+        then $docs3//an:FRBRExpression/an:FRBRdate[(xs:date(@date)<=xs:date($toDate))]/ancestor::node()
+        else ()
+      else $docs3//an:akomaNtoso/ancestor::node()
+     
+    let $docs5 := 
+     if($status != '')
+     then
+      if ($docs4//gwd:workflow/gwd:state[@status = $status]/ancestor::node())
+      then $docs4//gwd:workflow/gwd:state[@status = $status]/ancestor::node()
+      else ()
+     else $docs4//gwd:workflow/ancestor::node()
+      
+    let $total-docs := count($docs5)
     return map {
          "records" := $total-docs,
          "pageSize" := $count,
          "itemsFrom" := $from,                    
          "totalPages" := ceiling($total-docs div $count) ,
          "currentPage" := xs:integer($from div $count) + 1,    
-         "data" := subsequence($docs4, $from, $count)
+         "data" := subsequence($docs5, $from, $count)
         }
 };
 
