@@ -101,13 +101,13 @@ declare function local:transit-rewrite-permissions($json-permission) {
     <gwd:permissions> {
       for $entry in $json-permission?*
         return
-            <permission name="{$entry?name}">
-                <roles> {
+            <gwd:permission name="{$entry?name}">
+                <gwd:roles> {
                   for $role-entry in $entry?roles?*
                   return
-                    <role name="{$role-entry}" />
-                }</roles>
-            </permission>
+                    <gwd:role name="{$role-entry}" />
+                }</gwd:roles>
+            </gwd:permission>
     } </gwd:permissions>
 };
 
