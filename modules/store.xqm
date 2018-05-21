@@ -202,7 +202,9 @@ declare function store:get-docs($type as xs:string, $count as xs:integer, $from 
         }
 };
 
-declare function store:get-filtered-docs($type as xs:string, $count as xs:integer, $from as xs:integer, $roles as array(xs:string), $title as xs:string,$docType as array(xs:string),$fromDate as xs:string,$toDate as xs:string,$status as array(xs:string)) {
+declare function store:get-filtered-docs($type as xs:string, $count as xs:integer, $from as xs:integer, 
+                                         $roles as array(xs:string), $title as xs:string,$docType as array(xs:string),
+                                         $subType as array(xs:string),$fromDate as xs:string,$toDate as xs:string,$status as array(xs:string)) {
     let $s-map := config:storage-info()
     let $docs := collection($s-map("path"))//an:akomaNtoso/ancestor::node()
     let $filtered-docs := store:filter-docs-listing($docs, $roles)
@@ -216,15 +218,19 @@ declare function store:get-filtered-docs($type as xs:string, $count as xs:intege
             else ()
         else $filtered-docs//an:akomaNtoso/ancestor::node()
       
-    let $doc2-match := $docs1//an:akomaNtoso/an:*[@name = $docType]/ancestor::node()
+    let $doc2-match := $docs1//an:akomaNtoso/an:*[local-name() = $docType][@name = $subType]/ancestor::node()
+
+(: if localTypeName is checked in the UI, then $docType(=aknType) and $subType(=localTypeNameNormalized) both would be present
+:  else none of them would be present so we can just use one of them in the if condition
+:)
     let $docs2 := 
-        if($docType != '')
+        if($subType != '')
         then
             if ($doc2-match)
             then $doc2-match
             else ()
         else $docs1//an:akomaNtoso/ancestor::node()
-    
+
     let $doc3-match := $docs2//an:FRBRExpression/an:FRBRdate[(xs:date(@date)>=xs:date($fromDate))]/ancestor::node()
     let $docs3 :=
         if ($doc3-match)
