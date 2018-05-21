@@ -205,7 +205,40 @@ function client-post:get-documents($json) {
     }
 };
 
-
+declare
+    %rest:POST("{$json}")
+    %rest:path("/gwdc/documents/filter")
+    %rest:consumes("application/json")
+    %rest:produces("application/json")
+    %output:media-type("application/json")
+    %output:method("json")  
+function client-post:get-filtered-documents($json) {
+   let $data := parse-json(util:base64-decode($json))
+   return
+    try {
+        let $docTypes := $data?docTypes
+        let $count := $data?pageSize
+        let $from := $data?itemsFrom
+        let $roles := $data?roles
+        let $title := $data?title
+        let $docType := $data?docType
+        let $fromDate := $data?fromDate
+        let $toDate := $data?toDate
+        let $status := $data?status
+        let $map-docs := store:get-filtered-docs($docTypes, xs:integer($count), xs:integer($from), $roles, xs:string($title),$docType,xs:string($fromDate),xs:string($toDate),$status)
+        return 
+            if (count($map-docs("data")) eq 0) then 
+              <return>
+                <error code="docs_not_found" message="documents not found" />
+              </return>
+            else
+              local:wrap-package($map-docs, xs:integer($count), xs:integer($from))
+    } catch * {
+        <return>
+            <error code="sys_err_{$err:code}" message="Caught error {$err:code}: {$err:description}" />
+        </return>
+    }
+};
 
 declare
     %rest:POST("{$json}")
