@@ -204,7 +204,7 @@ declare function store:get-docs($type as xs:string, $count as xs:integer, $from 
 
 declare function store:get-filtered-docs($type as xs:string, $count as xs:integer, $from as xs:integer, 
                                          $roles as array(xs:string), $title as xs:string,$docType as array(xs:string),
-                                         $subType as array(xs:string),$fromDate as xs:string,$toDate as xs:string,$status as array(xs:string)) {
+                                         $subType as array(xs:string),$fromDate as xs:string,$toDate as xs:string) {
     let $s-map := config:storage-info()
     let $docs := collection($s-map("path"))//an:akomaNtoso/ancestor::node()
     let $filtered-docs := store:filter-docs-listing($docs, $roles)
@@ -214,7 +214,7 @@ declare function store:get-filtered-docs($type as xs:string, $count as xs:intege
         if($title != '')
         then 
             if ($doc1-match)
-            then $doc1-match
+            then $doc1-match//an:akomaNtoso/ancestor::node()
             else ()
         else $filtered-docs//an:akomaNtoso/ancestor::node()
       
@@ -227,23 +227,23 @@ declare function store:get-filtered-docs($type as xs:string, $count as xs:intege
         if($subType != '')
         then
             if ($doc2-match)
-            then $doc2-match
+            then $doc2-match//an:akomaNtoso/ancestor::node()
             else ()
         else $docs1//an:akomaNtoso/ancestor::node()
 
     let $doc3-match := $docs2//an:FRBRExpression/an:FRBRdate[(xs:date(@date)>=xs:date($fromDate))]/ancestor::node()
     let $docs3 :=
         if ($doc3-match)
-        then $doc3-match
+        then $doc3-match//an:akomaNtoso/ancestor::node()
         else ()
      
     let $doc4-match := $docs3//an:FRBRExpression/an:FRBRdate[(xs:date(@date)<=xs:date($toDate))]/ancestor::node()
     let $docs4 :=
         if ($doc4-match)
-        then $doc4-match
+        then $doc4-match//an:akomaNtoso/ancestor::node()
         else ()
      
-    let $doc5-match := $docs4//gwd:workflow/gwd:state[@status = $status]/ancestor::node()
+(:  let $doc5-match := $docs4//gwd:workflow/gwd:state[@status = $status]/ancestor::node()
     let $docs5 := 
         if($status != '')
         then
@@ -251,15 +251,15 @@ declare function store:get-filtered-docs($type as xs:string, $count as xs:intege
             then $doc5-match
             else ()
         else $docs4//gwd:workflow/ancestor::node()
-      
-    let $total-docs := count($docs5)
+:)    
+    let $total-docs := count($docs4)
     return map {
          "records" := $total-docs,
          "pageSize" := $count,
          "itemsFrom" := $from,                    
          "totalPages" := ceiling($total-docs div $count) ,
          "currentPage" := xs:integer($from div $count) + 1,    
-         "data" := subsequence($docs5, $from, $count)
+         "data" := subsequence($docs4, $from, $count)
         }
 };
 
