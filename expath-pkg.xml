@@ -1,4 +1,5 @@
-<package xmlns="http://expath.org/ns/pkg" name="http://gawati.org/client-data" abbrev="gawati-client-data" version="1.5" spec="1.0">
+<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://expath.org/ns/pkg" name="http://gawati.org/client-data" abbrev="gawati-client-data" version="1.6" spec="1.0">
     <title>Client Data</title>
     <dependency package="http://exist-db.org/apps/shared"/>
 </package>

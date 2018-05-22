@@ -6,6 +6,9 @@ declare variable $exist:controller external;
 declare variable $exist:prefix external;
 declare variable $exist:root external;
 
+declare variable $local:HTTP_BAD_REQUEST := xs:integer(400);
+declare variable $local:HTTP_FORBIDDEN := xs:integer(403);
+
 if ($exist:path eq '') then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <redirect url="{request:get-uri()}/"/>
@@ -34,6 +37,12 @@ else if (contains($exist:path, "/$shared/")) then
             <set-header name="Cache-Control" value="max-age=3600, must-revalidate"/>
         </forward>
     </dispatch>
+(: Protect all _cfg folders :)
+else if (starts-with($exist:path, ("/_", "/%5F"))) then
+      (
+      response:set-status-code($local:HTTP_BAD_REQUEST),
+      <error>Bad Request</error>
+      )
 else
     (: everything else is passed through :)
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
