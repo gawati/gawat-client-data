@@ -222,10 +222,13 @@ function client-post:get-filtered-documents($json) {
         let $roles := $data?roles
         let $title := $data?title
         let $docType := $data?docType
+        let $subType := $data?subType
         let $fromDate := $data?fromDate
         let $toDate := $data?toDate
-        let $status := $data?status
-        let $map-docs := store:get-filtered-docs($docTypes, xs:integer($count), xs:integer($from), $roles, xs:string($title),$docType,xs:string($fromDate),xs:string($toDate),$status)
+        (:let $status := $data?status:)
+        let $map-docs := store:get-filtered-docs($docTypes, xs:integer($count), xs:integer($from), $roles, 
+                                                 xs:string($title),$docType,$subType,xs:string($fromDate),
+                                                 xs:string($toDate))
         return 
             if (count($map-docs("data")) eq 0) then 
               <return>
