@@ -10,6 +10,7 @@
     <type>application</type>
     <target>gawati-client-data</target>
     <prepare>pre-install.xql</prepare>
-    <finish/>
+    <finish>post-install.xql</finish>
     <permissions user="gawati-client-data" group="gawati-client-data" mode="rw-rw-r--"/>
-<deployed>2018-01-21T23:21:58.964+05:30</deployed></meta>
+
+<deployed>2018-05-03T19:45:55.814+05:30</deployed></meta>

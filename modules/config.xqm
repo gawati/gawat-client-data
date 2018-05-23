@@ -35,6 +35,8 @@ declare variable $config:data-root := $config:app-root || "/data";
 
 declare variable $config:repo-descriptor := doc(concat($config:app-root, "/repo.xml"))/repo:meta;
 
+declare variable $config:app-sec := doc(concat($config:app-root, "/_auth/_pw.xml"))/users;
+
 declare variable $config:expath-descriptor := doc(concat($config:app-root, "/expath-pkg.xml"))/expath:package;
 
 declare variable $config:cfgs := doc(concat($config:app-root, "/_configs/cfgs.xml"))/cfgx:config ;
@@ -69,9 +71,11 @@ declare function config:storage-info()  {
     let $storage-info := $config:cfgs/cfgx:storage
     let $path := data($storage-info/@path)
     let $user := data($storage-info/@user)
+    let $pw := data($config:app-sec//user[@name eq $user]/@pw)
     return map {
         "db-path" := concat("xmldb:exist://", $path),
         "path" := $path,
-        "user" := $user
+        "user" := $user,
+        "pw":= $pw
     }
 };
