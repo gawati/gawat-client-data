@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <meta xmlns="http://exist-db.org/xquery/repo">
     <description>Client Data</description>
     <author>Ashok</author>
@@ -13,4 +12,5 @@
     <finish>post-install.xql</finish>
     <permissions user="gawati-client-data" group="gawati-client-data" mode="rw-rw-r--"/>
 
-<deployed>2018-05-03T19:45:55.814+05:30</deployed></meta>
+<deployed>2018-05-24T14:40:28.484+05:30</deployed>
+</meta>

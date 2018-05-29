@@ -1,5 +1,8 @@
 xquery version "3.1";
 
 import module namespace client-post="http://gawati.org/xq/client-db/services/post" at "../services/services-post.xql";
+import module namespace store="http://gawati.org/1.0/client/store" at "../modules/store.xqm";
 
-client-post:get-filtered-documents('{"docTypes": "all","itemsFrom": 1,"pageSize": 5, "roles":["client.Admin", "client.Public", "uma_authorization"], "title":"", "docType": ["act",""],"subType":["legge",""], "fromDate": "1900-01-01", "toDate": "2100-12-12"}')
+import module namespace config="http://gawati.org/client-data/config";
+
+client-post:delete-documents('{"iri":"/akn/tz/judgment/courtjudgment/2018-04-18/ssss/afr@/!main"}')

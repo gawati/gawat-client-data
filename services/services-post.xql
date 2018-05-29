@@ -113,6 +113,30 @@ function client-post:get-xml($json) {
     }
 };
 
+declare
+    %rest:POST("{$json}")
+    %rest:path("/gwdc/document/delete")
+    %rest:consumes("application/json")
+    %rest:produces("application/xml", "text/xml")
+function client-post:get-xml($json) {
+   let $data := parse-json(util:base64-decode($json))
+   return
+    try {
+        let $iri := $data?iri
+        let $doc := store:get-doc($iri)
+        return 
+            if (count($doc) eq 0) then 
+              <return>
+                <error code="doc_not_found" message="document not found" />
+              </return>
+            else
+              $doc
+    } catch * {
+        <return>
+            <error code="sys_err_{$err:code}" message="Caught error {$err:code}: {$err:description}" />
+        </return>
+    }
+};
 (:~
 :
 : Checks if a document exists
@@ -241,6 +265,20 @@ function client-post:get-filtered-documents($json) {
             <error code="sys_err_{$err:code}" message="Caught error {$err:code}: {$err:description}" />
         </return>
     }
+};
+
+declare
+    %rest:POST("{$json}")
+    %rest:path("/gwdc/documents/delete")
+    %rest:consumes("application/json")
+    %rest:produces("application/json")
+    %output:media-type("application/json")
+    %output:method("json")  
+function client-post:delete-documents($json) {
+   let $data := parse-json(util:base64-decode($json))
+   let $exprIriThis := $data?iri
+   let $del-doc := store:delete-doc($exprIriThis)
+   return $del-doc
 };
 
 declare
