@@ -5,4 +5,4 @@ import module namespace store="http://gawati.org/1.0/client/store" at "../module
 
 import module namespace config="http://gawati.org/client-data/config";
 
-client-post:delete-documents('{"iri":"/akn/tz/judgment/courtjudgment/2018-04-18/ssss/afr@/!main"}')
+store:delete-doc("/akn/mu/act/legge/1919-10-24/GN_212-1919/eng@/!main")

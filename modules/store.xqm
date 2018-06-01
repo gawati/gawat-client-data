@@ -137,14 +137,14 @@ declare function store:delete-doc($exprIriThis as xs:string) {
     let $s-map := config:storage-info()
     let $collection := $s-map("db-path")
     let $doc : = store:get-doc($exprIriThis)
+    let $doc-store := $doc
     let $log-in := dbauth:login()
     return
         if ($log-in) then
         let $del-doc := xmldb:remove(util:collection-name($doc),util:document-name($doc))
-        return
-            <return>
-                <success message="successfully deleted file" />
-            </return>  
+        return <return>
+                <success message="file deleted successfully" />
+             </return>
         else <return>
                 <error message="authentication failed" />
              </return>  
