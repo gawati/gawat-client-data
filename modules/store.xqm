@@ -1,7 +1,7 @@
 module namespace store="http://gawati.org/1.0/client/store";
 
 declare namespace xmldb="http://exist-db.org/xquery/xmldb";
- declare namespace util="http://exist-db.org/xquery/util";
+declare namespace util="http://exist-db.org/xquery/util";
  
 declare namespace cfgx="http://gawati.org/client/config";
 declare namespace an="http://docs.oasis-open.org/legaldocml/ns/akn/3.0";
@@ -131,6 +131,23 @@ declare function store:get-doc($exprIriThis as xs:string) {
             ]
         ]/ancestor::node()
     return $doc
+};
+
+declare function store:delete-doc($exprIriThis as xs:string) {  
+    let $s-map := config:storage-info()
+    let $collection := $s-map("db-path")
+    let $doc : = store:get-doc($exprIriThis)
+    let $doc-store := $doc
+    let $log-in := dbauth:login()
+    return
+        if ($log-in) then
+        let $del-doc := xmldb:remove(util:collection-name($doc),util:document-name($doc))
+        return <return>
+                <success message="file deleted successfully" />
+             </return>
+        else <return>
+                <error message="authentication failed" />
+             </return>  
 };
 
 declare function store:exists-doc($exprIriThis as xs:string) {

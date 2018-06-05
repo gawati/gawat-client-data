@@ -245,6 +245,20 @@ function client-post:get-filtered-documents($json) {
 
 declare
     %rest:POST("{$json}")
+    %rest:path("/gwdc/document/delete")
+    %rest:consumes("application/json")
+    %rest:produces("application/json")
+    %output:media-type("application/json")
+    %output:method("json")  
+function client-post:delete-document($json) {
+   let $data := parse-json(util:base64-decode($json))
+   let $exprIriThis := $data?iri
+   let $del-doc := store:delete-doc($exprIriThis)
+   return $del-doc
+};
+
+declare
+    %rest:POST("{$json}")
     %rest:path("/gwdc/document/edit")
     %rest:consumes("application/json")
     %rest:produces("application/json")
