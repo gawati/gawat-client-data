@@ -52,3 +52,20 @@ function client-get:about() {
     return
     "package=" || data($doc/pkg:package/@abbrev) || ";" || "version=" ||  data($doc/pkg:package/@version) || ";date=" || data($doc/pkg:package/@date) 
 };
+
+:~
+ : This is used to get the meta data of documents
+ : @returns json
+ :)
+ 
+declare
+    %rest:GET
+    %rest:path("/gwdc/documents/metadata")
+    %rest:produces("application/json")
+    %output:media-type("application/json")
+    %output:method("json")   
+function client-get:metadata(
+    ) {
+    let $data := store:get-metadata()
+    return $data
+};

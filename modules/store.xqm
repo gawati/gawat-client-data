@@ -133,6 +133,21 @@ declare function store:get-doc($exprIriThis as xs:string) {
     return $doc
 };
 
+declare function store:get-metadata() {
+    let $s-map := config:storage-info()
+    let $docs := collection($s-map("path"))//an:akomaNtoso
+    return
+    <metadata source="{$s-map("path")}">
+    {
+    for $kw in $docs//an:classification/an:keyword
+        let $kw-shows := $kw/@showAs
+        group by $kwv := data($kw/@value)
+        order by $kwv ascending
+        return <keyword value="{$kwv}" >{$kw-shows[1]}</keyword>
+     }
+     </metadata>  
+};
+
 declare function store:delete-doc($exprIriThis as xs:string) {  
     let $s-map := config:storage-info()
     let $collection := $s-map("db-path")
