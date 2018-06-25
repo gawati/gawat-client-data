@@ -53,11 +53,10 @@ function client-get:about() {
     "package=" || data($doc/pkg:package/@abbrev) || ";" || "version=" ||  data($doc/pkg:package/@version) || ";date=" || data($doc/pkg:package/@date) 
 };
 
-:~
- : This is used to get the meta data of documents
- : @returns json
- :)
- 
+(:~
+: This is used to get the meta data of documents
+: @returns json
+:)
 declare
     %rest:GET
     %rest:path("/gwdc/documents/metadata")
