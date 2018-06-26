@@ -7,6 +7,7 @@ declare namespace cfgx="http://gawati.org/client/config";
 declare namespace an="http://docs.oasis-open.org/legaldocml/ns/akn/3.0";
 declare namespace gwd="http://gawati.org/ns/1.0/data";
 declare namespace gw="http://gawati.org/ns/1.0";
+declare namespace ftfile="http://gawati.org/ns/1.0/content/pdf";
 
 import module namespace functx="http://www.functx.com" at "./functx.xql" ;
 import module namespace config="http://gawati.org/client-data/config" at "./config.xqm";
@@ -329,6 +330,9 @@ declare variable $store:UPDATE_MAP :=
         <entry key="docTitle">
             <update>update value $doc//an:publication/@showAs with $update-value</update>
         </entry>
+        <entry key="tags">
+            <update>update value $doc//an:tags with $update-value</update>
+        </entry>
     </updateMap>
 ;
 
@@ -380,3 +384,60 @@ declare function store:update-doc($iri as xs:string, $data as array(*)) {
     }
 };
 
+declare function store:get-tags($iri as xs:string) {
+    let $doc := store:get-doc($iri)
+    let $meta-tags := string-join(data($doc//@showAs[not (.="")]), ",")
+    
+    let $ft-iri := functx:replace-first($iri, '/akn', '/akn_ft')
+    let $ft-path := utils:iri-upto-date-part($ft-iri)
+    
+    let $s-map := config:storage-info()
+    let $ft-docs := collection(concat($s-map("path"), $ft-path))
+    let $ft-tags := string-join(data($ft-docs//ftfile:pages//ftfile:tags), ",")
+    
+    let $s := concat($meta-tags, ",", $ft-tags) 
+    return distinct-values(tokenize($s, ","))
+};
+
+declare function store:refresh-tags($iri as xs:string) {
+    try {
+        let $log-in := dbauth:login()
+        return
+            if ($log-in) then
+                 let $doc := store:get-doc($iri)
+                 let $tags := store:get-tags($iri)
+                 let $logout := dbauth:logout()
+                 return
+                    if (count($tags) gt 0) then
+                       <return>
+                        <success code="Tags Refreshed" message="Tags refreshed">
+                           {
+                            let $update-key := 'tags'
+                            let $update-value := string-join($tags, ",")
+                            let $update-config := $store:UPDATE_MAP/entry[@key = $update-key]  
+                            let $update-qry :=  data($update-config/update)
+                            return
+                             <success code="tags_refreshed" key="{$update-key}"> 
+                                {
+                                        util:eval(
+                                           $update-qry
+                                        )
+                               }
+                              </success>
+                           } 
+                      </success>
+                     </return>
+                    else
+                      <return>
+                        <error code="tags_not_found" message="Tags not found" />
+                      </return>
+           else
+            <return>
+                <error code="failed_to_authenticate_with_store" message="Unable to authenticate with storage" />
+            </return>
+    } catch * {
+        <return>
+            <error code="sys_err_{$err:code}" message="Caught error {$err:code}: {$err:description}" />
+        </return>
+    }
+};

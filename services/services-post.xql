@@ -351,3 +351,29 @@ function client-post:attachments($json) {
     let $ret := store:save-attachments($doc-iri, $obj?attachments) 
     return $ret
 };
+
+
+(:
+: {
+:    "iri": iri
+: }
+:)
+declare
+    %rest:POST("{$json}")
+    %rest:path("/gwdc/document/tags/refresh")
+    %rest:consumes("application/json")
+    %rest:produces("application/json")
+    %output:media-type("application/json")
+    %output:method("json")  
+function client-post:refresh-tags($json) {
+    let $data := parse-json(util:base64-decode($json))
+    return
+    try {
+        let $iri := $data?iri
+        return store:refresh-tags($iri)
+    } catch * {
+        <return>
+            <error code="sys_err_{$err:code}" message="Caught error {$err:code}: {$err:description}" />
+        </return>
+    }
+};
