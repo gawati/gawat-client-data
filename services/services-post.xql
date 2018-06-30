@@ -377,3 +377,24 @@ function client-post:refresh-tags($json) {
         </return>
     }
 };
+
+
+(:~
+:
+: add a metadata in the documents
+: Returns a JSON object
+:
+:)
+declare
+    %rest:POST("{$json}")
+    %rest:path("/gwdc/document/metadata/add")
+    %rest:consumes("application/json")
+    %rest:produces("application/json")
+    %output:media-type("application/json")
+    %output:method("json")  
+function client-post:add-metadata($json) {
+    let $obj := parse-json(util:base64-decode($json))
+    let $doc-iri := $obj?iri
+    let $ret := store:save-metadata($doc-iri, $obj?metadata) 
+    return $ret
+};
