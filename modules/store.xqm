@@ -65,6 +65,40 @@ declare function local:attachments-rewrite-book($json-attachments) {
     } </an:book>
 };
 
+(:
+ : Save the metadata) 
+ :)
+declare function store:save-metadata($doc-iri as xs:string, $json-metadata) {
+    (: generate the new classification node :)
+    let $classification-node := local:metadata-rewrite-classification($json-metadata)
+    (: get the existing document from the database :)
+    let $doc := store:get-doc($doc-iri)
+    (: build a map of nodes to rewrite :)
+    let $switch-map := map {
+        "classifications" := $classification-node
+    }
+    (: create a new document based on the map :)
+    let $rewritten-doc := docrewrite:rewriter($doc, $switch-map)
+    (: Get file name for the doc :)
+    let $file-xml := util:document-name($doc)
+    (: write rewritten doc to the database:)
+    return store:save-doc($doc-iri, $rewritten-doc, $file-xml) 
+};
+
+(: 
+!+(AH, 2018-07-03) - make source configurable
+:)
+declare function local:metadata-rewrite-classification($json-metadata) {
+   <an:classification source="#editor">{
+      for $entry in $json-metadata?*
+        return
+            <an:keyword eId="ontology.dictionary.gawati.editor.{$entry?value}" 
+                        value="{$entry?value}"
+                        showAs="{$entry?showAs}"
+                        dictionary="#gawati-editor"/>
+    } </an:classification>
+};
+
 
 (:
  : Transit the document from one state to another. Transiting involves rewriting the current state in the <workflow> element
