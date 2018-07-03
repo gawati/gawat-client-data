@@ -85,14 +85,17 @@ declare function store:save-metadata($doc-iri as xs:string, $json-metadata) {
     return store:save-doc($doc-iri, $rewritten-doc, $file-xml) 
 };
 
+(: 
+!+(AH, 2018-07-03) - make source configurable
+:)
 declare function local:metadata-rewrite-classification($json-metadata) {
-   <an:classification source="#legacy">{
+   <an:classification source="#editor">{
       for $entry in $json-metadata?*
         return
-            <an:keyword eId="ontology.dictionary.gawati.legacy.{$entry?value}" 
+            <an:keyword eId="ontology.dictionary.gawati.editor.{$entry?value}" 
                         value="{$entry?value}"
                         showAs="{$entry?showAs}"
-                        dictionary="#gawati-legacy"/>
+                        dictionary="#gawati-editor"/>
     } </an:classification>
 };
 
