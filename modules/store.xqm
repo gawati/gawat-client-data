@@ -475,3 +475,32 @@ declare function store:refresh-tags($iri as xs:string) {
         </return>
     }
 };
+
+declare function store:save-pkg($iri as xs:string, $doc as item()*, $fname-xml as xs:string, $key as item()*, $fname-key as xs:string) {
+    let $s-map := config:storage-info()
+    (: get akn prefixed sub-path :)
+    let $db-path := utils:iri-upto-date-part($iri)
+    let $log-in := dbauth:login()
+    return
+        if ($log-in) then
+            (: attempt to create the collection, it will return without creating if the collection
+            already exists :)
+            let $newcol := xmldb:create-collection($s-map("db-path"), $db-path)
+            (: store the key :)
+            let $stored-doc := xmldb:store($s-map("db-path") || $db-path, $fname-xml, $doc)
+            let $stored-key := xmldb:store-as-binary($s-map("db-path") || $db-path, $fname-key, $key)
+            let $logout := dbauth:logout()
+            return
+            if (empty($stored-doc) or empty($stored-key)) then
+               <return>
+                    <error code="save_pkg_failed" message="error while saving signed package" />
+               </return>
+            else
+               <return>
+                    <success code="save_pkg" message="{$stored-doc} ; {$stored-key}" />
+               </return>     
+        else
+            <return>
+                <error code="save_login_failed" message="login to save collection failed" />
+            </return>
+};
