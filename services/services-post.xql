@@ -398,3 +398,35 @@ function client-post:add-metadata($json) {
     let $ret := store:save-metadata($doc-iri, $obj?metadata) 
     return $ret
 };
+
+declare
+    %rest:POST("{$json}")
+    %rest:path("/gwdc/pkg/add")
+    %rest:consumes("application/json")
+    %rest:produces("application/json")
+    %output:media-type("application/json")
+    %output:method("json")  
+function client-post:save-pkg($json) {
+   let $data := parse-json(util:base64-decode($json))
+   return
+    try {
+        let $update := $data?update
+        let $iri := $data?iri
+        let $fname-xml := $data?fnameXml
+        let $doc := util:parse($data?doc)
+        let $fname-key := $data?fnameKey
+        let $public-key := $data?publicKey
+        let $exists := store:exists-doc($iri)
+        return 
+            if ($exists and $update ne true()) then 
+              <return>
+                <error code="exists_cannot_overwrite" message="file exists cannot overwrite" />
+              </return>
+            else
+                store:save-pkg($iri, $doc, $fname-xml, $public-key, $fname-key)
+    } catch * {
+        <return>
+            <error code="sys_err_{$err:code}" message="Caught error {$err:code}: {$err:description}" />
+        </return>
+    }
+};
