@@ -430,3 +430,36 @@ function client-post:save-pkg($json) {
         </return>
     }
 };
+
+(:~
+:
+: Returns XML Document and Public key 
+:
+:)
+declare
+    %rest:POST("{$json}")
+    %rest:path("/gwdc/pkg/load")
+    %rest:consumes("application/json")
+    %rest:produces("application/zip")
+    %output:media-type("application/zip")
+(:    %output:method("json"):)
+function client-post:load-pkg($json) {
+   let $data := parse-json(util:base64-decode($json))
+   return
+    try {
+        let $iri := $data?iri
+        let $zip := store:get-pkg($iri)
+        
+        return 
+            if (count($zip) eq 0) then 
+              <return>
+                <error code="pkg_not_found" message="package not found" />
+              </return>
+            else
+                $zip
+    } catch * {
+        <return>
+            <error code="sys_err_{$err:code}" message="Caught error {$err:code}: {$err:description}" />
+        </return>
+    }
+};

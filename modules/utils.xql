@@ -1,5 +1,5 @@
 module namespace utils="http://gawati.org/1.0/client/utils";
-
+import module namespace functx="http://www.functx.com" at "./functx.xql";
 
 declare function utils:is-date($date) {
     try{
@@ -34,3 +34,12 @@ declare function utils:value-intersect
 
   distinct-values($arg1[.=$arg2])
  } ;
+
+declare function utils:get-filename-from-iri($iri as xs:string, $ext as xs:string) {
+    let $arr := tokenize($iri, "/")[position() ne 1]
+    let $filename := string-join($arr, "_")
+    let $from :=	('@', '!')
+    let $to :=	('', '')
+    let $filename := functx:replace-multi($filename, $from, $to)
+    return concat($filename, ".", $ext)
+};

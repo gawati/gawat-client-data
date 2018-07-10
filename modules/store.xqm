@@ -15,6 +15,7 @@ import module namespace andoc="http://exist-db.org/xquery/apps/akomantoso30" at 
 import module namespace utils="http://gawati.org/1.0/client/utils" at "./utils.xql" ;
 import module namespace docrewrite="http://gawati.org/1.0/client/docrewrite" at "./docrewrite.xql";
 import module namespace dbauth="http://gawati.org/1.0/client/dbauth" at "./dbauth.xql";
+import module namespace compression="http://exist-db.org/xquery/compression";
 
 (:
  : Save the attachments in the document. Saving involves rewriting the current set of attachments in the <embeddedContents> element
@@ -488,7 +489,7 @@ declare function store:save-pkg($iri as xs:string, $doc as item()*, $fname-xml a
             let $newcol := xmldb:create-collection($s-map("db-path"), $db-path)
             (: store the key :)
             let $stored-doc := xmldb:store($s-map("db-path") || $db-path, $fname-xml, $doc)
-            let $stored-key := xmldb:store-as-binary($s-map("db-path") || $db-path, $fname-key, $key)
+            let $stored-key := xmldb:store($s-map("db-path") || $db-path, $fname-key, $key, 'application/octet-stream')
             let $logout := dbauth:logout()
             return
             if (empty($stored-doc) or empty($stored-key)) then
@@ -503,4 +504,24 @@ declare function store:save-pkg($iri as xs:string, $doc as item()*, $fname-xml a
             <return>
                 <error code="save_login_failed" message="login to save collection failed" />
             </return>
+};
+
+declare function store:get-pkg($iri as xs:string) {
+    let $s-map := config:storage-info()
+    let $iri-dir := utils:iri-upto-date-part($iri)
+    let $dir := concat($s-map("path"), $iri-dir)
+    let $meta-fname := utils:get-filename-from-iri($iri, "xml")
+    let $key-fname := utils:get-filename-from-iri($iri, "public")
+    
+    let $zip as item() := 
+    (
+        let $entries as item()+ := 
+            (
+                <entry name="{$key-fname}" type="binary" method="store">{util:binary-doc(concat($dir, "/", $key-fname))}</entry>,
+                <entry name="{$meta-fname}" type="xml" method="store">{doc(concat($dir, "/", $meta-fname))}</entry>
+            )
+            return
+                compression:zip($entries, false())
+    )
+    return $zip
 };
