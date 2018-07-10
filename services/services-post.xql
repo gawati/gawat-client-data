@@ -7,6 +7,7 @@ import module namespace sm = "http://exist-db.org/xquery/securitymanager";
 declare namespace output="http://www.w3.org/2010/xslt-xquery-serialization";
 import module namespace store="http://gawati.org/1.0/client/store" at "../modules/store.xqm";
 declare namespace gwd="http://gawati.org/ns/1.0/data";
+import module namespace request="http://exist-db.org/xquery/request";
 
 declare
     %rest:POST("{$json}")
@@ -399,38 +400,6 @@ function client-post:add-metadata($json) {
     return $ret
 };
 
-declare
-    %rest:POST("{$json}")
-    %rest:path("/gwdc/pkg/add")
-    %rest:consumes("application/json")
-    %rest:produces("application/json")
-    %output:media-type("application/json")
-    %output:method("json")  
-function client-post:save-pkg($json) {
-   let $data := parse-json(util:base64-decode($json))
-   return
-    try {
-        let $update := $data?update
-        let $iri := $data?iri
-        let $fname-xml := $data?fnameXml
-        let $doc := util:parse($data?doc)
-        let $fname-key := $data?fnameKey
-        let $public-key := $data?publicKey
-        let $exists := store:exists-doc($iri)
-        return 
-            if ($exists and $update ne true()) then 
-              <return>
-                <error code="exists_cannot_overwrite" message="file exists cannot overwrite" />
-              </return>
-            else
-                store:save-pkg($iri, $doc, $fname-xml, $public-key, $fname-key)
-    } catch * {
-        <return>
-            <error code="sys_err_{$err:code}" message="Caught error {$err:code}: {$err:description}" />
-        </return>
-    }
-};
-
 (:~
 :
 : Returns XML Document and Public key 
@@ -457,6 +426,37 @@ function client-post:load-pkg($json) {
               </return>
             else
                 $zip
+    } catch * {
+        <return>
+            <error code="sys_err_{$err:code}" message="Caught error {$err:code}: {$err:description}" />
+        </return>
+    }
+};
+
+
+declare
+    %rest:POST
+    %rest:path("/gwdc/pkg/add")
+    %rest:consumes("multipart/form-data")
+    %rest:produces("application/json")
+    %output:media-type("application/json")
+    %output:method("json")  
+function client-post:save-pkg() {
+    try {
+        let $iri := "/akn/ke/act/legge/2018-07-06/Test_tags_2/eng@/!main"
+        let $fname-key := request:get-uploaded-file-name('public_key')
+        let $public-key := request:get-uploaded-file-data('public_key')
+        let $fname-xml := request:get-uploaded-file-name('akn_xml')
+        let $doc := request:get-uploaded-file-data('akn_xml')
+        let $update := true()
+        let $exists := store:exists-doc($iri)
+        return 
+            if ($exists and $update ne true()) then 
+              <return>
+                <error code="exists_cannot_overwrite" message="file exists cannot overwrite" />
+              </return>
+            else
+                store:save-pkg($iri, $doc, $fname-xml, $public-key, $fname-key)
     } catch * {
         <return>
             <error code="sys_err_{$err:code}" message="Caught error {$err:code}: {$err:description}" />
