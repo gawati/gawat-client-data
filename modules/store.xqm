@@ -477,7 +477,10 @@ declare function store:refresh-tags($iri as xs:string) {
     }
 };
 
-declare function store:save-pkg($iri as xs:string, $doc as item()*, $fname-xml as xs:string, $key as item()*, $fname-key as xs:string) {
+(:
+ : Saves the signed metadata xml and public key.
+ :)
+declare function store:save-pkg($iri as xs:string, $doc as item()*, $key as item()*) {
     let $s-map := config:storage-info()
     (: get akn prefixed sub-path :)
     let $db-path := utils:iri-upto-date-part($iri)
@@ -487,9 +490,12 @@ declare function store:save-pkg($iri as xs:string, $doc as item()*, $fname-xml a
             (: attempt to create the collection, it will return without creating if the collection
             already exists :)
             let $newcol := xmldb:create-collection($s-map("db-path"), $db-path)
-            (: store the key :)
+            (: store the doc :)
+            let $fname-xml := utils:get-filename-from-iri($iri, "xml")
             let $stored-doc := xmldb:store($s-map("db-path") || $db-path, $fname-xml, $doc)
-            let $stored-key := xmldb:store($s-map("db-path") || $db-path, $fname-key, $key, 'application/octet-stream')
+            (: store the key :)
+            let $fname-key := utils:get-filename-from-iri($iri, "public")
+            let $stored-key := xmldb:store($s-map("db-path") || $db-path, $fname-key, $key, 'text/plain')
             let $logout := dbauth:logout()
             return
             if (empty($stored-doc) or empty($stored-key)) then
@@ -506,6 +512,9 @@ declare function store:save-pkg($iri as xs:string, $doc as item()*, $fname-xml a
             </return>
 };
 
+(:
+ : Returns a zip of the metadata xml and public key (if present), for the given iri. 
+ :)
 declare function store:get-pkg($iri as xs:string) {
     let $s-map := config:storage-info()
     let $iri-dir := utils:iri-upto-date-part($iri)
