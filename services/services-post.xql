@@ -399,6 +399,9 @@ function client-post:add-metadata($json) {
     return $ret
 };
 
+(:
+ : Saves the signed metadata xml and public key.
+ :)
 declare
     %rest:POST("{$json}")
     %rest:path("/gwdc/pkg/add")
@@ -412,9 +415,7 @@ function client-post:save-pkg($json) {
     try {
         let $update := $data?update
         let $iri := $data?iri
-        let $fname-xml := $data?fnameXml
         let $doc := util:parse($data?doc)
-        let $fname-key := $data?fnameKey
         let $public-key := $data?publicKey
         let $exists := store:exists-doc($iri)
         return 
@@ -423,7 +424,39 @@ function client-post:save-pkg($json) {
                 <error code="exists_cannot_overwrite" message="file exists cannot overwrite" />
               </return>
             else
-                store:save-pkg($iri, $doc, $fname-xml, $public-key, $fname-key)
+                store:save-pkg($iri, $doc, $public-key)
+    } catch * {
+        <return>
+            <error code="sys_err_{$err:code}" message="Caught error {$err:code}: {$err:description}" />
+        </return>
+    }
+};
+
+(:~
+:
+: Returns a zip of the metadata XML and Public key (if present)
+:
+:)
+declare
+    %rest:POST("{$json}")
+    %rest:path("/gwdc/pkg/load")
+    %rest:consumes("application/json")
+    %rest:produces("application/zip")
+    %output:media-type("application/zip")
+function client-post:load-pkg($json) {
+   let $data := parse-json(util:base64-decode($json))
+   return
+    try {
+        let $iri := $data?iri
+        let $zip := store:get-pkg($iri)
+        let $exists := store:exists-doc($iri)
+        return 
+            if (not($exists) or count($zip) eq 0) then 
+              <return>
+                <error code="pkg_not_found" message="package not found" />
+              </return>
+            else
+                $zip
     } catch * {
         <return>
             <error code="sys_err_{$err:code}" message="Caught error {$err:code}: {$err:description}" />
