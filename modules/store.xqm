@@ -437,11 +437,11 @@ declare function store:get-tags($iri as xs:string) {
 declare function store:refresh-tags($iri as xs:string) {
     try {
         let $log-in := dbauth:login()
-        return
+        let $result := 
+        
             if ($log-in) then
                  let $doc := store:get-doc($iri)
                  let $tags := store:get-tags($iri)
-                 let $logout := dbauth:logout()
                  return
                     if (count($tags) gt 0) then
                        <return>
@@ -470,6 +470,8 @@ declare function store:refresh-tags($iri as xs:string) {
             <return>
                 <error code="failed_to_authenticate_with_store" message="Unable to authenticate with storage" />
             </return>
+            let $logout := dbauth:logout()
+            return $result
     } catch * {
         <return>
             <error code="sys_err_{$err:code}" message="Caught error {$err:code}: {$err:description}" />
