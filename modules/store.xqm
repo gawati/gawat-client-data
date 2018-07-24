@@ -67,6 +67,26 @@ declare function local:attachments-rewrite-book($json-attachments) {
 };
 
 (:
+ : Save the custom metadata
+ :)
+declare function store:save-custom-metadata($doc-iri as xs:string, $xml-metadata) {
+    (: generate the new gawatiMeta node :)
+    let $gawatiMeta-node := util:parse($xml-metadata)
+    (: get the existing document from the database :)
+    let $doc := store:get-doc($doc-iri)
+    (: build a map of nodes to rewrite :)
+    let $switch-map := map {
+        "gawatiMeta" := $gawatiMeta-node
+    }
+    (: create a new document based on the map :)
+    let $rewritten-doc := docrewrite:rewriter($doc, $switch-map)
+    (: Get file name for the doc :)
+    let $file-xml := util:document-name($doc)
+    (: write rewritten doc to the database:)
+    return store:save-doc($doc-iri, $rewritten-doc, $file-xml) 
+};
+
+(:
  : Save the metadata) 
  :)
 declare function store:save-metadata($doc-iri as xs:string, $json-metadata) {

@@ -18,6 +18,7 @@ declare function docrewrite:rewriter($nodes as node()*, $switch-map) as item()* 
             case element(gw:embeddedContents) return local:dispatch-element($node, $switch-map, "embeddedContents")
             case element(an:book) return local:dispatch-element($node, $switch-map, "book")
             case element(an:classification) return local:dispatch-element($node, $switch-map, "classifications")
+            case element(gw:gawatiMeta) return local:dispatch-element($node, $switch-map, "gawatiMeta")
             default return local:default($node, $switch-map)
 };
 

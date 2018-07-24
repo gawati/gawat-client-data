@@ -463,3 +463,24 @@ function client-post:load-pkg($json) {
         </return>
     }
 };
+
+(:~
+:
+: add custom metadata in the documents
+: Returns a JSON object
+:
+:)
+declare
+    %rest:POST("{$json}")
+    %rest:path("/gwdc/document/cmeta/add")
+    %rest:consumes("application/json")
+    %rest:produces("application/json")
+    %output:media-type("application/json")
+    %output:method("json")  
+function client-post:add-cmeta($json) {
+    let $obj := parse-json(util:base64-decode($json))
+    let $doc-iri := $obj?iri
+    let $xml-metadata := $obj?data
+    let $ret := store:save-custom-metadata($doc-iri, $xml-metadata) 
+    return $ret
+};
