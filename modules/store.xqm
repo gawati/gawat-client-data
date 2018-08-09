@@ -547,10 +547,13 @@ declare function store:get-pkg($iri as xs:string) {
     let $zip as item() := 
     (
         let $entries as item()+ := 
-            (
-                <entry name="{$key-fname}" type="binary" method="store">{util:binary-doc(concat($dir, "/", $key-fname))}</entry>,
-                <entry name="{$meta-fname}" type="xml" method="store">{doc(concat($dir, "/", $meta-fname))}</entry>
-            )
+            if (utils:file-exists(concat($dir, "/", $key-fname))) then
+                (
+                    <entry name="{$key-fname}" type="binary" method="store">{util:binary-doc(concat($dir, "/", $key-fname))}</entry>,
+                    <entry name="{$meta-fname}" type="xml" method="store">{doc(concat($dir, "/", $meta-fname))}</entry>
+                )                
+            else
+                (<entry name="{$meta-fname}" type="xml" method="store">{doc(concat($dir, "/", $meta-fname))}</entry>)
             return
                 compression:zip($entries, false())
     )
